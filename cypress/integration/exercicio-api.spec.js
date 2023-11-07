@@ -4,6 +4,12 @@ const faker = require('faker');
 
 describe('Testes da Funcionalidade Usuários', () => {
 
+    let token
+    before(() => {
+        cy.token('Stephan_Schumm@yahoo.com', 'teste').then(tkn => { token = tkn })
+    });
+
+
     it('Deve validar contrato de usuários', () => {
         //TODO: utilizar o joi
     });
@@ -36,7 +42,6 @@ describe('Testes da Funcionalidade Usuários', () => {
         }).then((response) => {
             expect(response.status).to.equal(201)
             expect(response.duration).to.be.lessThan(200)
-            const token =cy.token(emailfaker, 'teste').then(tkn => { token = tkn })
         })
     });
 
