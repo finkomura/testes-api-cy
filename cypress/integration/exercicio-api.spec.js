@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-
+import contrato from '../contracts/usuarios.contract'
 const faker = require('faker');
 
 describe('Testes da Funcionalidade Usuários', () => {
@@ -12,6 +12,9 @@ describe('Testes da Funcionalidade Usuários', () => {
 
     it('Deve validar contrato de usuários', () => {
         //TODO: utilizar o joi
+        cy.request('usuarios').then(response => {
+            return contrato.validateAsync(response.body)
+        })
     });
 
     it('Deve listar usuários cadastrados', () => {
@@ -112,5 +115,20 @@ describe('Testes da Funcionalidade Usuários', () => {
 
     it('Deve deletar um usuário previamente cadastrado', () => {
         //TODO: criar um usuario, buscar id do usuario, utilizar DELETE, fazer assercao da mensagem de erro
+        let nomefaker = faker.name.findName();
+        let emailfaker = faker.internet.email();
+        cy.cadastrarUsuario(nomefaker, emailfaker, 'teste', 'true').then((response) => {
+            expect(response.status).to.equal(201)
+            const id = response.body._id;
+
+            cy.request({
+                method: 'DELETE',
+                url: `usuarios/${id}`,
+                headers: { authorization: token }
+            }).then(response => {
+                expect(response.body.message).to.equal('Registro excluído com sucesso')
+                expect(response.status).to.equal(200)
+            })
+        });
     });
 });
