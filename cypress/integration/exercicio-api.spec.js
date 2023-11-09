@@ -1,17 +1,20 @@
 /// <reference types="cypress" />
 import contrato from '../contracts/usuarios.contract'
 const faker = require('faker');
+//chamando as ferramentas que vamos utilizar ao longo do exercicio
 
 describe('Testes da Funcionalidade Usuários', () => {
-
+//nesse teste a intencao esta voltada em testar os principais verbos da funcionalidade usuarios
+    
     let token
     before(() => {
         cy.token('Stephan_Schumm@yahoo.com', 'teste').then(tkn => { token = tkn })
     });
+    //nessa funcao estamos 'convidando' o token que vamos utilizar sempre que for necessario autenticar-se como adm
 
 
     it('Deve validar contrato de usuários', () => {
-        //TODO: utilizar o joi
+        //TODO: utilizar o joi para validar o contrato, para isso foi feita a pasta contracts e dentro dela o arquivo usuarion.contracts.js
         cy.request('usuarios').then(response => {
             return contrato.validateAsync(response.body)
         })
@@ -24,27 +27,19 @@ describe('Testes da Funcionalidade Usuários', () => {
             url: 'usuarios'
         }).then((response) => {
             expect(response.status).to.equal(200)
-            expect(response.duration).to.be.lessThan(100)
-        })
+            expect(response.duration).to.be.lessThan(25)
+        }) 
     });
 
     it('Deve cadastrar um usuário com sucesso', () => {
         //TODO: realizar um POST com o body completo e validar a assercao e frase de sucesso
         let nomefaker = faker.name.findName();
         let emailfaker = faker.internet.email();
-        cy.request({
-            method: 'POST',
-            url: 'usuarios',
-            body:
-            {
-                "nome": nomefaker,
-                "email": emailfaker,
-                "password": "teste",
-                "administrador": "true"
-            }
-        }).then((response) => {
-            expect(response.status).to.equal(201)
-            expect(response.duration).to.be.lessThan(200)
+        // A escolha de envolver uma biblioteca faker foi somente para gerar dados mais reais
+        cy.cadastrarUsuario(nomefaker, emailfaker, 'teste', 'true').then((response) => { 
+            expect(response.status).to.equal(201) //validando codigo da resposta
+            expect(response.body.message).to.equal("Cadastro realizado com sucesso") //validando mensagem de sucesso
+            expect(response.duration).to.be.lessThan(30) //validando desempenho
         })
     });
 
@@ -73,15 +68,16 @@ describe('Testes da Funcionalidade Usuários', () => {
                 "password": "teste",
                 "administrador": "true"
             },
-            failOnStatusCode: false
+            failOnStatusCode: false //necessario para que a mensagem 4xx nao falhe nosso teste
         }).then((response) => {
-            expect(response.status).to.equal(400)
+            expect(response.status).to.equal(400) //verificando o codigo de erro, ok
+            expect(response.body.message).to.equal("Este email já está sendo usado") //validando mensagem de erro
         })
     });
 
     it('Deve editar um usuário previamente cadastrado', () => {
         //TODO: realizar um cadastro, de seguida editar o mesmo usuario, utilizar o metodo PUT e validar a assercao com mensagem e codigo de sucesso
-        let nomefaker = faker.name.findName();
+        let nomefaker = faker.name.findName(); //procura um nome e sobrenome faker
         let emailfaker = faker.internet.email();
         cy.request({
             method: 'POST',
